@@ -1,5 +1,4 @@
 # Productivity-Dashboard
-# Productivity-Dashboard
 
 A beautifully designed, feature-rich dashboard to organize your day, track goals, and stay focused.
 
