@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Desk / Productivity Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script>
+  /* Apply saved theme before first paint to avoid a flash of the wrong theme */
+  (function(){
+    try{
+      var saved = localStorage.getItem('dashboard:theme');
+      if(saved === 'dark' || saved === 'light'){
+        document.documentElement.setAttribute('data-theme', saved);
+      }
+    }catch(e){}
+  })();
+</script>
+</head>
+<body>
+
+
+<!-- ============ THEME TOGGLE (always visible) ============ -->
+<button id="themeToggle" class="theme-toggle" aria-label="Toggle light and dark theme" title="Toggle theme">
+  <span class="theme-toggle__track">
+    <span class="theme-toggle__thumb"></span>
+  </span>
+</button>
+
+<!-- ============ DASHBOARD (home screen) ============ -->
+<main id="dashboard" class="dashboard">
+
+  <header class="dashboard__header">
+    <div class="dashboard__greeting">
+      <p class="eyebrow" id="greetingEyebrow">Good day</p>
+      <h1 id="greetingText">Let's get things done.</h1>
+    </div>
+
+    <div class="widgets-row">
+      <!-- Date & Time widget -->
+      <section class="widget widget--clock" aria-label="Current date and time">
+        <p class="widget__time" id="clockTime">--:--:--</p>
+        <p class="widget__date" id="clockDate">Loading date…</p>
+      </section>
+
+      <!-- Weather widget -->
+      <section class="widget widget--weather" aria-label="Current weather">
+        <div class="widget__weather-main">
+          <span class="widget__weather-icon" id="weatherIcon">⛅</span>
+          <span class="widget__weather-temp" id="weatherTemp">--°</span>
+        </div>
+        <p class="widget__weather-place" id="weatherPlace">Locating…</p>
+        <p class="widget__weather-detail" id="weatherDetail"></p>
+      </section>
+    </div>
+  </header>
+
+  <!-- Feature cards grid -->
+  <section class="grid" id="cardGrid" aria-label="Dashboard features">
+
+    <button class="card card--todo" data-target="todo">
+      <span class="card__icon">✓</span>
+      <span class="card__title">Todo List</span>
+      <span class="card__meta" id="todoCardMeta">0 tasks</span>
+      <span class="card__bar"></span>
+    </button>
+
+    <button class="card card--planner" data-target="planner">
+      <span class="card__icon">▤</span>
+      <span class="card__title">Daily Planner</span>
+      <span class="card__meta" id="plannerCardMeta">Plan your hours</span>
+      <span class="card__bar"></span>
+    </button>
+
+    <button class="card card--pomodoro" data-target="pomodoro">
+      <span class="card__icon">◔</span>
+      <span class="card__title">Focus Timer</span>
+      <span class="card__meta" id="pomodoroCardMeta">25:00 ready</span>
+      <span class="card__bar"></span>
+    </button>
+
+    <button class="card card--goals" data-target="goals">
+      <span class="card__icon">◆</span>
+      <span class="card__title">Daily Goals</span>
+      <span class="card__meta" id="goalsCardMeta">0 of 0 complete</span>
+      <span class="card__bar"></span>
+    </button>
+
+    <button class="card card--quote" data-target="quote">
+      <span class="card__icon">❝</span>
+      <span class="card__title">Motivation</span>
+      <span class="card__meta">A little push</span>
+      <span class="card__bar"></span>
+    </button>
+
+  </section>
+
+  <footer class="dashboard__footer">
+    <p>Built card by card — pick one to begin.</p>
+  </footer>
+</main>
+
+<!-- ============ FEATURE: TODO LIST ============ -->
+<section class="feature" id="feature-todo" data-feature aria-hidden="true">
+  <div class="feature__panel">
+    <button class="feature__back" data-back aria-label="Back to dashboard">← Dashboard</button>
+    <h2 class="feature__title">Todo List</h2>
+    <p class="feature__subtitle">Capture it, flag it, finish it.</p>
+
+    <form id="todoForm" class="input-row">
+      <input type="text" id="todoInput" placeholder="Add a task…" autocomplete="off" maxlength="140">
+      <button type="submit" class="btn btn--primary">Add task</button>
+    </form>
+
+    <ul class="task-list" id="todoList" aria-live="polite"></ul>
+    <p class="empty-state" id="todoEmpty">Nothing here yet. Add your first task above.</p>
+  </div>
+</section>
+
+<!-- ============ FEATURE: DAILY PLANNER ============ -->
+<section class="feature" id="feature-planner" data-feature aria-hidden="true">
+  <div class="feature__panel">
+    <button class="feature__back" data-back aria-label="Back to dashboard">← Dashboard</button>
+    <h2 class="feature__title">Daily Planner</h2>
+    <p class="feature__subtitle">One line per hour. Nothing fancy.</p>
+
+    <div class="planner-list" id="plannerList"></div>
+  </div>
+</section>
+
+<!-- ============ FEATURE: POMODORO TIMER ============ -->
+<section class="feature" id="feature-pomodoro" data-feature aria-hidden="true">
+  <div class="feature__panel feature__panel--center">
+    <button class="feature__back" data-back aria-label="Back to dashboard">← Dashboard</button>
+    <h2 class="feature__title">Focus Timer</h2>
+    <p class="feature__subtitle" id="pomodoroSession">Work session</p>
+
+    <div class="timer">
+      <span class="timer__display" id="timerDisplay">25:00</span>
+    </div>
+
+    <div class="timer__controls">
+      <button class="btn btn--primary" id="timerStart">Start</button>
+      <button class="btn btn--ghost" id="timerPause" disabled>Pause</button>
+      <button class="btn btn--ghost" id="timerReset">Reset</button>
+    </div>
+
+    <div class="timer__modes">
+      <button class="chip is-active" data-mins="25" data-label="Work session">25 min</button>
+      <button class="chip" data-mins="5" data-label="Short break">5 min</button>
+      <button class="chip" data-mins="15" data-label="Long break">15 min</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEATURE: MOTIVATION QUOTE ============ -->
+<section class="feature" id="feature-quote" data-feature aria-hidden="true">
+  <div class="feature__panel feature__panel--center">
+    <button class="feature__back" data-back aria-label="Back to dashboard">← Dashboard</button>
+    <h2 class="feature__title">Motivation</h2>
+
+    <blockquote class="quote-card" id="quoteCard">
+      <p class="quote-card__text" id="quoteText">Loading a quote for you…</p>
+      <footer class="quote-card__author" id="quoteAuthor"></footer>
+    </blockquote>
+
+    <button class="btn btn--primary" id="quoteRefresh">New quote</button>
+  </div>
+</section>
+
+<!-- ============ FEATURE: DAILY GOALS ============ -->
+<section class="feature" id="feature-goals" data-feature aria-hidden="true">
+  <div class="feature__panel">
+    <button class="feature__back" data-back aria-label="Back to dashboard">← Dashboard</button>
+    <h2 class="feature__title">Daily Goals</h2>
+    <p class="feature__subtitle" id="goalsProgress">0 of 0 completed</p>
+
+    <div class="progress-track">
+      <div class="progress-track__fill" id="goalsProgressFill"></div>
+    </div>
+
+    <form id="goalForm" class="input-row">
+      <input type="text" id="goalInput" placeholder="Set a goal for today…" autocomplete="off" maxlength="120">
+      <button type="submit" class="btn btn--primary">Add goal</button>
+    </form>
+
+    <ul class="task-list task-list--goals" id="goalList" aria-live="polite"></ul>
+    <p class="empty-state" id="goalsEmpty">No goals yet. What matters most today?</p>
+  </div>
+</section>
+
+<script src="script.js"></script>
+</body>
+</html>
